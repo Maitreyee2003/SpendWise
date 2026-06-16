@@ -1,0 +1,15 @@
+com\spendwise\controller\GetExpensesServlet.class
+com\spendwise\util\DatabaseConnection.class
+com\spendwise\controller\LoginServlet.class
+com\spendwise\controller\ResetPasswordServlet.class
+com\spendwise\controller\GetAnnualSummaryServlet.class
+com\spendwise\controller\ExpenseServlet.class
+com\spendwise\controller\VerifyOtpServlet.class
+com\spendwise\controller\DeleteExpenseServlet.class
+com\spendwise\controller\LogoutServlet.class
+com\spendwise\controller\RegisterServlet.class
+com\spendwise\controller\GetIncomeServlet.class
+com\spendwise\controller\DownloadReportServlet.class
+com\spendwise\controller\AddIncomeServlet.class
+com\spendwise\controller\ForgotPasswordServlet$1.class
+com\spendwise\controller\ForgotPasswordServlet.class

@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="UTF-8">
+    <title>SpendWise - Verify OTP</title>
+    <style>
+        /* Same dark theme */
+        body {
+            margin: 0;
+            padding: 0;
+            background: linear-gradient(135deg, #0a0a1a, #0d1b2a);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-family: Arial, sans-serif;
+        }
+
+        .container {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(0, 198, 255, 0.2);
+            border-radius: 16px;
+            padding: 40px;
+            width: 100%;
+            max-width: 400px;
+            text-align: center;
+        }
+
+        h2 { color: #00c6ff; margin-bottom: 10px; }
+        p { color: #aaa; font-size: 14px; margin-bottom: 25px; }
+
+        input {
+            width: 100%;
+            padding: 12px;
+            margin: 10px 0;
+            background: rgba(255,255,255,0.1);
+            border: 1px solid rgba(255,255,255,0.2);
+            color: #fff;
+            border-radius: 8px;
+            font-size: 14px;
+            box-sizing: border-box;
+            /* Text center mein dikhega OTP ke liye */
+            text-align: center;
+            /* Bada font size OTP clearly dikhne ke liye */
+            letter-spacing: 8px;
+            font-size: 20px;
+        }
+
+        button {
+            width: 100%;
+            padding: 12px;
+            margin-top: 15px;
+            background: linear-gradient(135deg, #00c6ff, #0072ff);
+            border: none;
+            color: white;
+            font-weight: bold;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+
+        a { color: #00c6ff; text-decoration: none; font-weight: bold; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>📧 Verify OTP</h2>
+        <p>Enter the 6-digit OTP sent to your email. Valid for 10 minutes only!</p>
+
+        <!-- Form jo VerifyOtpServlet pe jayega -->
+        <form action="verifyOtp" method="POST">
+
+            <!-- User email pe aaya OTP yahan dalta hai -->
+            <input type="text" 
+                   name="otp" 
+                   placeholder="0 0 0 0 0 0" 
+                   maxlength="6"
+                   required>
+
+            <!-- Verify button -->
+            <button type="submit">Verify OTP ✅</button>
+
+        </form>
+
+        <!-- Agar OTP nahi aaya toh dobara bhejo -->
+        <p style="margin-top: 20px;">
+            Didn't receive OTP? 
+            <a href="forgot-password.html">Resend OTP</a>
+        </p>
+    </div>
+</body>
+</html>
