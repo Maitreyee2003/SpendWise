@@ -8,14 +8,14 @@ import java.sql.SQLException;
 
 public class DatabaseConnection {
 
-    // LINE 3: Database ka address (URL). 'localhost:3306' matlab aapka computer aur 'spendwise_db' database ka naam.
-    private static final String URL = "jdbc:mysql://localhost:3306/spendwise_db";
+	// Clever Cloud ka database URL
+	private static final String URL = "jdbc:mysql://bwuvbt2g59kf8qo6b5oe-mysql.services.clever-cloud.com:3306/bwuvbt2g59kf8qo6b5oe?useSSL=false&allowPublicKeyRetrieval=true";
 
-    // LINE 4: MySQL ka default admin username jo hamesha 'root' hota hai.
-    private static final String USERNAME = "root";
+	// Clever Cloud ka username
+	private static final String USERNAME = "uhk5oytswnoxtzb";
 
-    // LINE 5: Aapke MySQL ka sahi password jo aapne set kiya hai.
-    private static final String PASSWORD = "Maitreyee@123"; 
+	// Clever Cloud ka password
+	private static final String PASSWORD = "calVSuygKFIdV8VlcXMF";
 
     // LINE 6: Ek common method (function) jo pure project mein kahin bhi database connection provide karega.
     public static Connection getConnection() {
