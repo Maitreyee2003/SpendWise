@@ -1,0 +1,10 @@
+{
+  "build": {
+    "type": "maven",
+    "goal": "package -DskipTests"
+  },
+  "deploy": {
+    "container": "TOMCAT11",
+    "goal": "war:war"
+  }
+}
