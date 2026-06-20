@@ -1,137 +1,395 @@
-// ⚡ [THE HARDWARE BUFFER MANAGING ENGINE - MEMORY PROTECTION OBJECT]:
-// Maqsad: Doughnut visual graphics charts ke active configurations trackers object data pointers ko trace me rakhna.
-// Logic: Chart.js browser heap memory khata hai. Jab user dropdown filter index toggle karega, toh hum .destroy() pipeline 
-// run karenge taaki older records diagrams clean purge flush ho jayein aur app elements overlapping variables crashes memory leak breaks se bacha sake.
 let spendwiseChartInstance = null;
+window.currentRawExpenses = [];
 
-// ⚡ [REPORTING UTILITIES STATEMENT CACHE DATA CONTAINER BUFFER]:
-// Maqsad: Current selected month ka table raw items array response response packet is memory repository line string proxy me mirror save rehata hai,
-// taaki pdf dynamic engine tool direct local parameters sets arrays maps formatting structure access karke rapid printable tables cells map inject bindings generate kr ske.
-window.currentRawExpenses = []; 
+// ======= TOAST NOTIFICATION SYSTEM =======
+function showToast(message, type = 'success') {
+    const existing = document.querySelector('.sw-toast');
+    if (existing) existing.remove();
 
-// 🔄 [FRONT-END DOMINITIALIZATION EVENT LIFECYCLE ROUTINES SETUP]: HTML browser compiler hierarchy stack structure fully load hone ke 
-// instant behind the scene asynchronous background streams initialization hooks triggers fire operations engine flow core.
+    const toast = document.createElement('div');
+    toast.className = 'sw-toast';
+
+    const colors = {
+        success: { bg: 'rgba(56,239,125,0.1)', border: '#38ef7d', color: '#38ef7d', icon: '✅' },
+        error: { bg: 'rgba(255,71,87,0.1)', border: '#ff4757', color: '#ff4757', icon: '❌' },
+        warning: { bg: 'rgba(255,165,0,0.1)', border: '#ffa502', color: '#ffa502', icon: '⚠️' },
+        info: { bg: 'rgba(0,198,255,0.1)', border: '#00c6ff', color: '#00c6ff', icon: 'ℹ️' }
+    };
+
+    const c = colors[type] || colors.success;
+
+    toast.innerHTML = `
+        <span style="font-size:18px;">${c.icon}</span>
+        <span style="font-size:13px; font-weight:600; color:${c.color};">${message}</span>
+        <button onclick="this.parentElement.remove()" 
+                style="background:none; border:none; color:${c.color}; 
+                       cursor:pointer; font-size:16px; margin-left:8px;">×</button>
+    `;
+
+    Object.assign(toast.style, {
+        position: 'fixed',
+        top: '20px',
+        right: '20px',
+        display: 'flex',
+        alignItems: 'center',
+        gap: '10px',
+        padding: '14px 18px',
+        background: c.bg,
+        border: `1px solid ${c.border}`,
+        borderRadius: '12px',
+        backdropFilter: 'blur(20px)',
+        zIndex: '9999',
+        boxShadow: `0 8px 32px rgba(0,0,0,0.4), 0 0 0 1px rgba(255,255,255,0.05)`,
+        animation: 'toastIn 0.4s cubic-bezier(0.175,0.885,0.32,1.275) forwards',
+        maxWidth: '320px',
+        fontFamily: 'Inter, sans-serif'
+    });
+
+    if (!document.getElementById('toast-style')) {
+        const style = document.createElement('style');
+        style.id = 'toast-style';
+        style.textContent = `
+            @keyframes toastIn {
+                from { opacity:0; transform:translateX(100px) scale(0.8); }
+                to { opacity:1; transform:translateX(0) scale(1); }
+            }
+            @keyframes toastOut {
+                from { opacity:1; transform:translateX(0) scale(1); }
+                to { opacity:0; transform:translateX(100px) scale(0.8); }
+            }
+        `;
+        document.head.appendChild(style);
+    }
+
+    document.body.appendChild(toast);
+
+    setTimeout(() => {
+        toast.style.animation = 'toastOut 0.3s ease forwards';
+        setTimeout(() => toast.remove(), 300);
+    }, 3500);
+}
+
+// ======= CONFETTI ANIMATION =======
+function launchConfetti() {
+    const colors = ['#00c6ff','#0072ff','#38ef7d','#ff4757','#ffa502','#7c5cbf','#eccc68'];
+    const container = document.createElement('div');
+    container.style.cssText = `
+        position:fixed; top:0; left:0; width:100%; height:100%;
+        pointer-events:none; z-index:9998; overflow:hidden;
+    `;
+    document.body.appendChild(container);
+
+    if (!document.getElementById('confetti-style')) {
+        const style = document.createElement('style');
+        style.id = 'confetti-style';
+        style.textContent = `
+            @keyframes confettiFall {
+                0% { transform: translateY(-20px) rotate(0deg); opacity:1; }
+                100% { transform: translateY(100vh) rotate(720deg); opacity:0; }
+            }
+            @keyframes confettiSway {
+                0%,100% { margin-left: 0px; }
+                25% { margin-left: 30px; }
+                75% { margin-left: -30px; }
+            }
+        `;
+        document.head.appendChild(style);
+    }
+
+    for (let i = 0; i < 60; i++) {
+        const piece = document.createElement('div');
+        const color = colors[Math.floor(Math.random() * colors.length)];
+        const size = Math.random() * 8 + 4;
+        const isCircle = Math.random() > 0.5;
+
+        Object.assign(piece.style, {
+            position: 'absolute',
+            left: Math.random() * 100 + '%',
+            top: '-20px',
+            width: size + 'px',
+            height: size + 'px',
+            background: color,
+            borderRadius: isCircle ? '50%' : '2px',
+            animation: `confettiFall ${Math.random() * 2 + 1.5}s ease-in ${Math.random() * 0.5}s forwards,
+                        confettiSway ${Math.random() * 1 + 1}s ease-in-out ${Math.random() * 0.5}s infinite`,
+            opacity: '1',
+            boxShadow: `0 0 6px ${color}80`
+        });
+
+        container.appendChild(piece);
+    }
+
+    setTimeout(() => container.remove(), 3500);
+}
+
+// ======= SUCCESS OVERLAY (when expense added) =======
+function showAddSuccessAnimation(itemName, amount, category) {
+    const overlay = document.createElement('div');
+    overlay.style.cssText = `
+        position:fixed; inset:0;
+        display:flex; align-items:center; justify-content:center;
+        z-index:9997; pointer-events:none;
+    `;
+
+    overlay.innerHTML = `
+        <div id="successCard" style="
+            background: rgba(13,17,23,0.95);
+            border: 1px solid rgba(56,239,125,0.3);
+            border-radius: 20px;
+            padding: 32px 40px;
+            text-align: center;
+            box-shadow: 0 0 60px rgba(56,239,125,0.15), 0 24px 48px rgba(0,0,0,0.6);
+            animation: popIn 0.5s cubic-bezier(0.175,0.885,0.32,1.275) forwards;
+            font-family: Inter, sans-serif;
+        ">
+            <div style="font-size:48px; margin-bottom:12px; animation: bounce 0.6s ease 0.3s both;">✅</div>
+            <div style="font-size:22px; font-weight:800; color:#38ef7d; margin-bottom:6px;">
+                Transaction Added!
+            </div>
+            <div style="font-size:14px; color:rgba(255,255,255,0.6); margin-bottom:4px;">
+                ${itemName}
+            </div>
+            <div style="font-size:28px; font-weight:900; color:#00c6ff; letter-spacing:-0.5px;">
+                ₹${parseFloat(amount).toFixed(2)}
+            </div>
+            <div style="
+                display:inline-block;
+                margin-top:10px;
+                padding:4px 12px;
+                background:rgba(0,198,255,0.1);
+                border:1px solid rgba(0,198,255,0.2);
+                border-radius:20px;
+                font-size:12px;
+                color:#00c6ff;
+                font-weight:600;
+            ">${category}</div>
+        </div>
+    `;
+
+    if (!document.getElementById('popup-style')) {
+        const style = document.createElement('style');
+        style.id = 'popup-style';
+        style.textContent = `
+            @keyframes popIn {
+                from { opacity:0; transform:scale(0.5) translateY(30px); }
+                to { opacity:1; transform:scale(1) translateY(0); }
+            }
+            @keyframes popOut {
+                from { opacity:1; transform:scale(1); }
+                to { opacity:0; transform:scale(0.8) translateY(-20px); }
+            }
+            @keyframes bounce {
+                0%,100% { transform:scale(1); }
+                50% { transform:scale(1.3); }
+            }
+        `;
+        document.head.appendChild(style);
+    }
+
+    document.body.appendChild(overlay);
+
+    setTimeout(() => {
+        const card = document.getElementById('successCard');
+        if (card) {
+            card.style.animation = 'popOut 0.4s ease forwards';
+        }
+        setTimeout(() => overlay.remove(), 400);
+    }, 2000);
+}
+
+// ======= CATEGORY CARD PULSE ANIMATION =======
+function pulseCategoryCard(category) {
+    const categoryMap = {
+        "Food": "card-food",
+        "Daily Uses": "card-daily",
+        "Shopping": "card-shopping",
+        "Travel & Fuel": "card-travel",
+        "Bills & Recharge": "card-bills",
+        "Others": "card-others"
+    };
+
+    const cardId = categoryMap[category];
+    if (!cardId) return;
+
+    const el = document.getElementById(cardId);
+    if (!el) return;
+
+    const parent = el.closest('.cat-card');
+    if (!parent) return;
+
+    if (!document.getElementById('pulse-style')) {
+        const style = document.createElement('style');
+        style.id = 'pulse-style';
+        style.textContent = `
+            @keyframes cardPulse {
+                0% { transform:scale(1); }
+                30% { transform:scale(1.08); }
+                60% { transform:scale(0.96); }
+                100% { transform:scale(1); }
+            }
+            .cat-pulse {
+                animation: cardPulse 0.6s cubic-bezier(0.175,0.885,0.32,1.275) !important;
+            }
+        `;
+        document.head.appendChild(style);
+    }
+
+    parent.classList.add('cat-pulse');
+    setTimeout(() => parent.classList.remove('cat-pulse'), 600);
+}
+
+// ======= BUTTON LOADING STATE =======
+function setButtonLoading(btn, loading) {
+    if (loading) {
+        btn.dataset.original = btn.innerHTML;
+        btn.innerHTML = `
+            <span style="display:inline-flex; align-items:center; gap:8px;">
+                <span style="
+                    display:inline-block;
+                    width:14px; height:14px;
+                    border:2px solid rgba(255,255,255,0.3);
+                    border-top-color:white;
+                    border-radius:50%;
+                    animation:spin 0.7s linear infinite;
+                "></span>
+                Adding...
+            </span>
+        `;
+        btn.disabled = true;
+        btn.style.opacity = '0.8';
+
+        if (!document.getElementById('spin-style')) {
+            const s = document.createElement('style');
+            s.id = 'spin-style';
+            s.textContent = `@keyframes spin { to { transform:rotate(360deg); } }`;
+            document.head.appendChild(s);
+        }
+    } else {
+        btn.innerHTML = btn.dataset.original || '➕ Add Transaction';
+        btn.disabled = false;
+        btn.style.opacity = '1';
+    }
+}
+
+// ======= STAT CARD VALUE ANIMATION =======
+function animateValue(elementId, newValue) {
+    const el = document.getElementById(elementId);
+    if (!el) return;
+
+    el.style.transform = 'scale(1.15)';
+    el.style.transition = 'transform 0.3s ease';
+
+    setTimeout(() => {
+        el.innerText = newValue;
+        el.style.transform = 'scale(1)';
+    }, 150);
+}
+
+// ======= MAIN INIT =======
 document.addEventListener('DOMContentLoaded', () => {
-    // Select selectors links inputs parameters boxes fields trackers buttons interfaces actions identifiers
     const addBtn = document.getElementById('addBtn');
     const nameInput = document.getElementById('itemName');
     const priceInput = document.getElementById('itemPrice');
     const categoryInput = document.getElementById('itemCategory');
     const monthFilter = document.getElementById('monthFilter');
     const budgetInput = document.getElementById('monthlyBudgetInput');
-    const downloadPdfBtn = document.getElementById('downloadPdfBtn');
 
-    // 💎 [THE SECURE GLASSMORPHIC MODAL INTERFACES TARGET SELECTORS MAPPINGS COMPONENT LAYER]: (CONSOLE ERROR LINE 52 ABSOLUTE REPAIR HOOKS)
-    // Maqsad: Elements selectors target handles pointers link schemas maps data items parameters configurations values rules profiles.
-    // Maitreyee, yahan jo matching definitions hain unka elements ids structure strict verified balanced locked link setup kiya hai, 
-    // isliye ab addEventListener null types crash errors triggers permanently disappear flush out execution strings down.
     const incomeModal = document.getElementById('incomeModal');
     const openIncomeModalBtn = document.getElementById('openIncomeModalBtn');
     const closeIncomeModalBtn = document.getElementById('closeIncomeModalBtn');
     const saveIncomeModalBtn = document.getElementById('saveIncomeModalBtn');
     const modalIncomeInput = document.getElementById('modalIncomeInput');
 
-    // 🚀 [BOOT RUN TIME TRACKER ALLOCATION CALENDAR CAPTURE]: Drop down selection configurations reading profiles bounds parameters, sets current default initial starting value to index 1 (January).
     const initialMonth = monthFilter.value || "1";
+    loadSavedBudgetForMonth(initialMonth);
+    fetchMonthlyExpenses(initialMonth);
+    loadAnnualOverviewMatrix();
 
-    // Immediate parallel backgrounds thread sync loaders pipelines execution run triggers profiles systems setup on initial boot load sequences
-    loadSavedBudgetForMonth(initialMonth);  // Recover local storage variables configurations keys values arrays components properties map rules
-    fetchMonthlyExpenses(initialMonth);     // Remote data select connection query engine center layer trigger pipelines scripts controls
-    loadAnnualOverviewMatrix();             // Populate 12 sub-month breaking matrix cells boxes numbers trackers display blocks layouts
-
-    // 🔄 [DROPDOWN VALUE FILTER TOGGLE ACTION LISTENER]: Active month dropdown elements metrics items shifts data recalculations setups pipelines trigger flow
+    // Month filter change
     monthFilter.addEventListener('change', () => {
         const selectedMonth = monthFilter.value;
-        loadSavedBudgetForMonth(selectedMonth); // Locate corresponding offline caching boundaries saved threshold keys records
-        fetchMonthlyExpenses(selectedMonth);    // Remote database asynchronous requests fetch rows reload pipelines executions configurations
-    });
+        loadSavedBudgetForMonth(selectedMonth);
+        fetchMonthlyExpenses(selectedMonth);
 
-    // Custom max cap field numbers variations tracking keyboard keystrokes stroke change listener hook
-    budgetInput.addEventListener('input', () => {
-        const currentMonthSelected = monthFilter.value;
-        const budgetVal = parseFloat(budgetInput.value) || 0;
-        
-        // Write dynamic numbers directly inside offline browser dictionary keys mappings strings settings properties
-        localStorage.setItem(`budget_m_${currentMonthSelected}`, budgetVal);
-        
-        const displayLabel = document.getElementById('budgetLimitDisplay');
-        if (displayLabel) {
-            displayLabel.innerText = `Active Limit for Selected Month: ₹${budgetVal.toFixed(2)}`;
+        // Update download report link
+        const monthNames = {
+            1:'January',2:'February',3:'March',4:'April',
+            5:'May',6:'June',7:'July',8:'August',
+            9:'September',10:'October',11:'November',12:'December'
+        };
+        const dlBtn = document.getElementById('downloadReportBtn');
+        if (dlBtn) {
+            dlBtn.href = `downloadReport?month=${monthNames[parseInt(selectedMonth)]}`;
         }
-        
-        fetchMonthlyExpenses(currentMonthSelected);
     });
 
-    // 📑 [PORTFOLIO SPECIAL FEATURE - VECTOR PDF REPORT DATA CONVERTER CTA HOOK BINDING ENGINES]
-    if (downloadPdfBtn) {
-        downloadPdfBtn.addEventListener('click', () => {
-            // 🔍 [THE TECHNICAL EXPLANATORY EDGE-CASE BUG RESOLVER ENGINE LAYER - REGEX SANITIZATION PURGE]:
-            // Issue: Option text values dropdown titles attributes strings markers labels structures arrays me emoticons emojis jode hain (`January ❄️`).
-            // Risk: Normal jsPDF string text streams document generators core engine standard formats in emojis code structures symbols parse nahi kar paati aur textual alignment blocks layout crash data distortions (`January 'Dp`) breaks errors throw krte hain generated docs headers me.
-            // Fix: RegExp object matching ranges filter execute kiya gaya hai jo pure dynamic elements variables characters configurations blocks strings me se binary graphic tags shapes codes wipe out clean delete kr k pure perfect clear alphabetic textual tokens (jaise strict clean string word *"January"*) data streams logic cells printer maps systems forward execute krta h.
-            let rawMonthText = monthFilter.options[monthFilter.selectedIndex].text;
-            let cleanMonthText = rawMonthText.replace(/[\uE000-\uF8FF]|\uD83C[\uDC00-\uDFFF]|\uD83D[\uDC00-\uDFFF]|[\u2011-\u26FF]|\uD83E[\uDD00-\uDFFF]/g, '').trim();
-            generatePDFReport(cleanMonthText);
-        });
-    }
+    // Budget input
+    budgetInput.addEventListener('input', () => {
+        const currentMonth = monthFilter.value;
+        const budgetVal = parseFloat(budgetInput.value) || 0;
+        localStorage.setItem(`budget_m_${currentMonth}`, budgetVal);
+        const display = document.getElementById('budgetLimitDisplay');
+        if (display) display.innerText = `Active Limit: ₹${budgetVal.toFixed(2)}`;
+        fetchMonthlyExpenses(currentMonth);
+    });
 
-    // =========================================================
-    // 💎 [THE FUTURISTIC WINDOW GLASS POP-UP MODAL DRIVERS TIMING WORKFLOW CONTROLS CLICK SELECTION TRIGGERS]
-    // =========================================================
-    
-    // [NEW ADDITION FEATURE CHANGE - POPUP LAUNCH ENGINE CLICK TRIGGER INTERFACE BINDING]:
+    // Income modal open
     if (openIncomeModalBtn && incomeModal) {
         openIncomeModalBtn.addEventListener('click', () => {
-            // Target elements selectors mask div overlays nodes tree properties list me target dynamic css display token utility '.active' append execute mapping parameters system settings. Result: Premium frosted background glass blur slide transformations active live view.
             incomeModal.classList.add('active');
-            if(modalIncomeInput) modalIncomeInput.focus(); // Highlights data fields input textfield pointer cursor instantly for swift interface responses rules maps properties elements sets
+            if (modalIncomeInput) modalIncomeInput.focus();
         });
     }
 
-    // [NEW ADDITION FEATURE CHANGE - POPUP DISMISS CANCEL CONTROLLER ACTION CLICK]:
+    // Income modal close
     if (closeIncomeModalBtn && incomeModal) {
         closeIncomeModalBtn.addEventListener('click', () => {
-            incomeModal.classList.remove('active'); // Fade-out scaling structural zoom out easing animations properties transitions interpolation lines loops activated
-            if(modalIncomeInput) modalIncomeInput.value = ""; // Clear values fields data inputs log entries string placeholder arrays elements variables
+            incomeModal.classList.remove('active');
+            if (modalIncomeInput) modalIncomeInput.value = '';
         });
     }
 
-    // [NEW ADDITION FEATURE CHANGE - ASYNCHRONOUS PACKETS TRANSMISSION INCOME SAVE SUBMIT PIPELINE HOOKS CORES]:
+    // Close modal on outside click
+    if (incomeModal) {
+        incomeModal.addEventListener('click', (e) => {
+            if (e.target === incomeModal) {
+                incomeModal.classList.remove('active');
+            }
+        });
+    }
+
+    // Save income
     if (saveIncomeModalBtn) {
         saveIncomeModalBtn.addEventListener('click', () => {
             const targetMonth = monthFilter.value;
             const inputVal = parseFloat(modalIncomeInput.value);
 
             if (isNaN(inputVal) || inputVal < 0) {
-                alert("Please provide valid income numerical parameters amount!");
+                showToast('Please enter a valid income amount!', 'error');
                 return;
             }
 
-            // AJAX FETCH SECURE REMOTE INTERACTION SERVICE ARCHITECTURE COMPILATION SEGMENT SUBSECTION DATA ENGINES: POST method maps configuration setup profiles target server mapping servlet controller execution lines (/addIncome)
             fetch('addIncome', {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/x-www-form-urlencoded' }, // Parameter serialized queries standard specification content types tokens contexts data attributes sets
-                body: `incomeAmount=${inputVal}&incomeMonth=${targetMonth}` // Form parameters queries bodies keys sets
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                body: `incomeAmount=${inputVal}&incomeMonth=${targetMonth}`
             })
-            .then(response => response.json()) // Decode return packets response buffers direct to clean JSON data array packets objects loops fields systems properties keys
+            .then(r => r.json())
             .then(data => {
-                if (data.status === "success") {
-                    incomeModal.classList.remove('active'); // Dismiss modal mask viewport layer box elements beautifully using styles callbacks loops curves
-                    modalIncomeInput.value = "";
-                    
-                    // Rerun data calculation center synchronization threads layers metrics charts updates parameters arrays mapping sets to update horizontal metrics cards numbers variables totals live!
+                if (data.status === 'success') {
+                    incomeModal.classList.remove('active');
+                    modalIncomeInput.value = '';
                     fetchMonthlyExpenses(targetMonth);
+                    showToast(`Income updated: ₹${inputVal.toLocaleString()}`, 'success');
                 } else {
-                    alert("Server Interrupted: " + data.message);
+                    showToast('Failed to update income!', 'error');
                 }
             })
-            .catch(err => console.error("Pipeline failure on writing user income state:", err));
+            .catch(() => showToast('Network error!', 'error'));
         });
     }
 
-    // =========================================================
-    // STANDARD SQL CRUD SUBMISSIONS PIPELINES OPERATION HOOKS CHANNELS RECONSTRUCTIONS
-    // =========================================================
+    // ======= ADD EXPENSE WITH ANIMATIONS =======
     addBtn.addEventListener('click', () => {
         const itemNameValue = nameInput.value.trim();
         const priceValue = parseFloat(priceInput.value);
@@ -139,318 +397,362 @@ document.addEventListener('DOMContentLoaded', () => {
         const targetMonth = monthFilter.value;
 
         if (!itemNameValue || isNaN(priceValue) || priceValue <= 0) {
-            alert("Please provide valid product name and expense amount!");
+            showToast('Please enter item name and valid amount!', 'error');
+
+            // Shake animation on empty inputs
+            [nameInput, priceInput].forEach(input => {
+                if (!input.value.trim() || (input === priceInput && (isNaN(priceValue) || priceValue <= 0))) {
+                    input.style.animation = 'shake 0.4s ease';
+                    input.style.borderColor = '#ff4757';
+                    setTimeout(() => {
+                        input.style.animation = '';
+                        input.style.borderColor = '';
+                    }, 500);
+                }
+            });
+
+            if (!document.getElementById('shake-style')) {
+                const s = document.createElement('style');
+                s.id = 'shake-style';
+                s.textContent = `
+                    @keyframes shake {
+                        0%,100%{transform:translateX(0)}
+                        20%{transform:translateX(-8px)}
+                        40%{transform:translateX(8px)}
+                        60%{transform:translateX(-6px)}
+                        80%{transform:translateX(6px)}
+                    }
+                `;
+                document.head.appendChild(s);
+            }
             return;
         }
+
+        // Loading state
+        setButtonLoading(addBtn, true);
 
         fetch('addExpense', {
             method: 'POST',
             headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
             body: `itemName=${encodeURIComponent(itemNameValue)}&itemPrice=${priceValue}&itemCategory=${encodeURIComponent(categoryValue)}&monthMonth=${targetMonth}`
         })
-        .then(response => response.json())
+        .then(r => r.json())
         .then(data => {
-            if (data.status === "success") {
-                nameInput.value = "";
-                priceInput.value = "";
+            setButtonLoading(addBtn, false);
+
+            if (data.status === 'success') {
+                nameInput.value = '';
+                priceInput.value = '';
+
+                // 🎉 All animations fire together!
+                launchConfetti();
+                showAddSuccessAnimation(itemNameValue, priceValue, categoryValue);
+                showToast(`Added ₹${priceValue} - ${itemNameValue}`, 'success');
 
                 setTimeout(() => {
                     fetchMonthlyExpenses(targetMonth);
                     loadAnnualOverviewMatrix();
-                }, 150);
+                    pulseCategoryCard(categoryValue);
+                }, 300);
+
             } else {
-                alert("Processing Exception: " + data.message);
+                showToast('Failed to add expense!', 'error');
             }
         })
-        .catch(err => console.error("Pipeline failure on creation:", err));
+        .catch(() => {
+            setButtonLoading(addBtn, false);
+            showToast('Network error! Check connection.', 'error');
+        });
+    });
+
+    // Enter key support
+    nameInput.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') priceInput.focus();
+    });
+    priceInput.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') addBtn.click();
     });
 });
 
-// Recover budget setup values records from computer local tracking caches memory databases strings configurations settings fields
+// ======= LOAD SAVED BUDGET =======
 function loadSavedBudgetForMonth(monthNum) {
     const budgetInput = document.getElementById('monthlyBudgetInput');
     const displayLabel = document.getElementById('budgetLimitDisplay');
     if (!budgetInput) return;
-    
-    const savedBudget = localStorage.getItem(`budget_m_${monthNum}`);
-    
-    if (savedBudget) {
-        budgetInput.value = savedBudget;
-        if (displayLabel) {
-            displayLabel.innerText = `Active Limit for Selected Month: ₹${parseFloat(savedBudget).toFixed(2)}`;
-        }
+
+    const saved = localStorage.getItem(`budget_m_${monthNum}`);
+    if (saved) {
+        budgetInput.value = saved;
+        if (displayLabel) displayLabel.innerText = `Active Limit: ₹${parseFloat(saved).toFixed(2)}`;
     } else {
-        budgetInput.value = "";
-        if (displayLabel) {
-            displayLabel.innerText = "Active Limit for Selected Month: Not Set 🚫";
-        }
+        budgetInput.value = '';
+        if (displayLabel) displayLabel.innerText = 'Active Limit: Not Set';
     }
 }
 
-// 📡 [THE ENGINE WORKFORCE RECONSTRUCTION - ASYNCHRONOUS DUAL FETCH SYNCHRONIZATION THREAD CONTROLLER CORE INTERFACE]:
-// Maqsad: Is application function engine pipeline layer ko fully upgrade kiya gaya hai. Yeh jab bhi background servlet data sets khichne fire hota h, toh remote server DB lines ke cross do separate servlets parameters query objects parallel loops calculations streams match mapping runtime execute krta h parameters targets layout systems elements side-by-side components horizontal status row cells dashboard.
+// ======= FETCH MONTHLY EXPENSES =======
 function fetchMonthlyExpenses(monthNum) {
     const listContainer = document.getElementById('transactionList');
     if (!listContainer) return;
 
     const categoryCards = {
-        "Food": "card-food", "Daily Uses": "card-daily", "Shopping": "card-shopping",
-        "Travel & Fuel": "card-travel", "Bills & Recharge": "card-bills", "Others": "card-others"
+        "Food": "card-food",
+        "Daily Uses": "card-daily",
+        "Shopping": "card-shopping",
+        "Travel & Fuel": "card-travel",
+        "Bills & Recharge": "card-bills",
+        "Others": "card-others"
     };
 
-    // 📡 DUAL FETCH SEGMENT ROUTINE WORKER PIPELINE STEP TRACKER LINE PART 1: Hits remote background Java Servlet selector reader channel database rows parameters endpoint maps items array collection (/getExpenses)
     fetch(`getExpenses?month=${monthNum}`)
-    .then(response => response.json())
+    .then(r => r.json())
     .then(expenseData => {
-        window.currentRawExpenses = expenseData; // Mirror records array to global reporting references caches pointers datasets strings maps
-        listContainer.innerHTML = "";
-        
-        let overallTotalSpent = 0;
-        let totalsMap = { "Food": 0, "Daily Uses": 0, "Shopping": 0, "Travel & Fuel": 0, "Bills & Recharge": 0, "Others": 0 };
+        window.currentRawExpenses = expenseData;
+        listContainer.innerHTML = '';
 
-        expenseData.forEach(item => {
-            overallTotalSpent += item.amount;
-            if (totalsMap[item.category] !== undefined) {
-                totalsMap[item.category] += item.amount;
-            }
-
-            const itemDiv = document.createElement('div');
-            itemDiv.className = 'transaction-item';
-            itemDiv.style = "display: flex; justify-content: space-between; align-items: center; background: rgba(255,255,255,0.04); padding: 12px; margin-bottom: 8px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.02);";
-            itemDiv.innerHTML = `
-                <span>${item.itemName} <small style="color: #aaa; display:block; font-size:11px;">(${item.category})</small></span>
-                <div style="display: flex; align-items: center; gap: 15px;">
-                    <strong style="color: #fff;">₹${item.amount.toFixed(2)}</strong>
-                    <button onclick="deleteTransaction(${item.id}, this)" style="background: none; border: none; color: #ff4757; cursor: pointer; font-size: 16px; padding: 2px 5px;">🗑️</button>
-                </div>
-            `;
-            listContainer.appendChild(itemDiv);
-        });
-
-        // Map computed financial scalar values digits directly inside premium design horizontal blue expenses card element view panel dashboard block
-        document.getElementById('totalSpent').innerText = `₹${overallTotalSpent.toFixed(2)}`;
-        Object.keys(totalsMap).forEach(key => {
-            const el = document.getElementById(categoryCards[key]);
-            if (el) el.innerText = `₹${totalsMap[key].toFixed(2)}`;
-        });
+        let totalSpent = 0;
+        let totalsMap = {
+            "Food": 0, "Daily Uses": 0, "Shopping": 0,
+            "Travel & Fuel": 0, "Bills & Recharge": 0, "Others": 0
+        };
 
         if (expenseData.length === 0) {
-            listContainer.innerHTML = "<p style='text-align:center; color:#aaa; margin-top:15px; font-size:13px;'>No transactions recorded for this month.</p>";
-            Object.values(categoryCards).forEach(id => { const el = document.getElementById(id); if (el) el.innerText = "₹0.00"; });
+            listContainer.innerHTML = `
+                <div class="empty-msg">
+                    <div style="font-size:32px; margin-bottom:10px;">📭</div>
+                    <div>No transactions for this month</div>
+                </div>
+            `;
+            Object.values(categoryCards).forEach(id => {
+                const el = document.getElementById(id);
+                if (el) el.innerText = '₹0.00';
+            });
+        } else {
+            expenseData.forEach(item => {
+                totalSpent += item.amount;
+                if (totalsMap[item.category] !== undefined) {
+                    totalsMap[item.category] += item.amount;
+                }
+
+                const div = document.createElement('div');
+                div.className = 'transaction-item fade-in-item';
+                div.innerHTML = `
+                    <div class="txn-left">
+                        <div class="txn-name">${item.itemName}</div>
+                        <div class="txn-cat">(${item.category})</div>
+                    </div>
+                    <div class="txn-right">
+                        <span class="txn-amount">₹${item.amount.toFixed(2)}</span>
+                        <button class="txn-del"
+                                onclick="deleteTransaction(${item.id}, this)"
+                                title="Delete">🗑️</button>
+                    </div>
+                `;
+                listContainer.appendChild(div);
+            });
+
+            Object.keys(totalsMap).forEach(key => {
+                const el = document.getElementById(categoryCards[key]);
+                if (el) el.innerText = `₹${totalsMap[key].toFixed(2)}`;
+            });
         }
 
-        // 📡 [NEW ADDTION CHANGE] - DUAL FETCH SEGMENT ROUTINE WORKER PIPELINE STEP TRACKER LINE PART 2 (The Twin Connection Interceptor Thread):
-        // Expenses query resolution arrays read hit complete hote hi instant automatic behind the scenes second secure java servlet query pipeline interface parameters fetch calculations run (/getIncome) matching fields structures values keys counters states variables
+        animateValue('totalSpent', `₹${totalSpent.toFixed(2)}`);
+
         fetch(`getIncome?month=${monthNum}`)
-        .then(res => res.json())
+        .then(r => r.json())
         .then(incomeObj => {
-            const currentMonthIncome = incomeObj.amount || 0.0;
-            
-            // 🧠 CORE CORE ALGORITHMIC BUSINESS BALANCING SYSTEM INSIGHTS:
-            // Net dynamic monthly savings remaining vector amount calculation = overall scalar base user incomes cash pool parameters - cumulative expense total records values integers structures variables
-            const computedNetSavings = currentMonthIncome - overallTotalSpent;
+            const income = incomeObj.amount || 0;
+            const savings = income - totalSpent;
 
-            // Map absolute incoming parameters database numbers directly to cyberpunk neon emerald green view horizontal metrics panel card container box element identifier
-            document.getElementById('totalIncome').innerText = `₹${currentMonthIncome.toFixed(2)}`;
-            
-            const savingsContainer = document.getElementById('netSavings');
-            const savingsCardBox = document.getElementById('netSavingsCard');
-            
-            savingsContainer.innerText = `₹${computedNetSavings.toFixed(2)}`;
+            animateValue('totalIncome', `₹${income.toFixed(2)}`);
+            animateValue('netSavings', `₹${savings.toFixed(2)}`);
 
-            // =========================================================
-            // 🎨 [THE INTELLIGENT METRICS COLOR SHIFT RADAR ENGINE CYBERPUNK ALGORITHMS SETUP MANAGEMENT CONSTRAINTS CORES]
-            // =========================================================
-            if (computedNetSavings < 0) {
-                // State Code Alert Red Deficit: Total cash balance drops behind absolute zero margins limits! (Shifts neon boundary stroke lines elements properties configurations variables layout design boxes parameters to neon danger radiant reds theme profile layout rules strings)
-                savingsContainer.style.color = "#ff4757"; 
-                savingsCardBox.style.borderColor = "rgba(255, 71, 87, 0.4)";
-                savingsCardBox.style.boxShadow = "0 0 15px rgba(255, 71, 87, 0.15)";
-            } else if (computedNetSavings === 0 && currentMonthIncome === 0) {
-                // State Code Neutral standard default unallocated markers settings parameters metrics strings options reset elements
-                savingsContainer.style.color = "#00c6ff"; 
-                savingsCardBox.style.borderColor = "rgba(0, 198, 255, 0.1)";
-                savingsCardBox.style.boxShadow = "none";
-            } else {
-                // State Code High Operational Safe Savings Zones Buffers: Money flows perfectly within control margins boundaries limits (illuminates vector borders configurations points coordinates lines strokes elements parameters to deep cyber mint emerald glowing neon parameters layouts format structures profiles rules)
-                savingsContainer.style.color = "#38ef7d"; 
-                savingsCardBox.style.borderColor = "rgba(56, 239, 125, 0.4)";
-                savingsCardBox.style.boxShadow = "0 0 15px rgba(56, 239, 125, 0.15)";
+            const savingsEl = document.getElementById('netSavings');
+            if (savingsEl) {
+                savingsEl.style.color = savings < 0 ? '#ff4757' : '#00c6ff';
             }
 
-            // Run alarms verification scanning metrics monitoring rules indicators totals configurations constraints fields
-            checkBudgetLimitsAndAlerts(overallTotalSpent, monthNum, computedNetSavings);
+            checkBudgetAlerts(totalSpent, monthNum, savings);
         });
 
-        renderAnalyticsChart(totalsMap);
+        renderChart(totalsMap);
     })
-    .catch(err => console.error("Pipeline failure on matrix refresh load operations sequence:", err));
+    .catch(err => console.error('Fetch error:', err));
 }
 
-// Validation logic algorithms parameters thresholds controls checkpoints elements profiles data allocations logs monitors rules
-function checkBudgetLimitsAndAlerts(totalSpentAmount, monthNum, computedNetSavings) {
-    const alertBanner = document.getElementById('budgetAlertBanner');
-    const spentCard = document.getElementById('totalSpentCard');
-    
-    if (!alertBanner) return;
+// ======= BUDGET ALERTS =======
+function checkBudgetAlerts(totalSpent, monthNum, savings) {
+    const banner = document.getElementById('budgetAlertBanner');
+    const progressBar = document.getElementById('budgetProgressBar');
+    if (!banner) return;
 
-    const currentSavedBudget = parseFloat(localStorage.getItem(`budget_m_${monthNum}`)) || 0;
+    const budget = parseFloat(localStorage.getItem(`budget_m_${monthNum}`)) || 0;
 
-    if (currentSavedBudget <= 0) {
-        // [INTELLIGENT INTEGRITY ADAPTIVE BACKUP SCAN SAFETY EVALUATION ALARM INTERCEPT FILTER]:
-        // Maqsad: Agar user ne target customized cap configuration limits explicit bounds properties set nahi bhi kiye hon, par agar system calculations evaluate counter levels values zero bounds drop out krein (cash pool deficit condition rules breach), instant activate flash dynamic alert warning banner components horizontal panels dashboards views systems safely!
-        if (computedNetSavings < 0) {
-            alertBanner.style.background = "rgba(255, 71, 87, 0.12)";
-            alertBanner.style.border = "2px solid #ff4757";
-            alertBanner.style.color = "#ff4757";
-            alertBanner.innerHTML = `🚨 CASH CRUNCH DEFICIT: Your expenditures have bypassed your total income pool limits by ₹${Math.abs(computedNetSavings).toFixed(2)}!`;
-            alertBanner.style.display = "block";
+    if (budget <= 0) {
+        if (savings < 0) {
+            banner.style.cssText = `
+                display:block;
+                background:rgba(255,71,87,0.1);
+                border:1px solid #ff4757;
+                color:#ff4757;
+                border-radius:10px;
+                padding:10px 14px;
+                font-size:12px;
+                font-weight:600;
+                text-align:center;
+                margin-top:8px;
+            `;
+            banner.innerHTML = `🚨 Cash deficit! Over income by ₹${Math.abs(savings).toFixed(2)}`;
         } else {
-            alertBanner.style.display = "none";
+            banner.style.display = 'none';
         }
-        if (spentCard) { spentCard.style.background = "linear-gradient(45deg, #1e3c72, #2a5298)"; spentCard.style.boxShadow = "none"; }
+        if (progressBar) progressBar.style.width = '0%';
         return;
     }
 
-    const usagePercentage = (totalSpentAmount / currentSavedBudget) * 100;
-    alertBanner.style.display = "block";
+    const pct = (totalSpent / budget) * 100;
+    banner.style.display = 'block';
+    banner.style.borderRadius = '10px';
+    banner.style.padding = '10px 14px';
+    banner.style.fontSize = '12px';
+    banner.style.fontWeight = '600';
+    banner.style.textAlign = 'center';
+    banner.style.marginTop = '8px';
 
-    if (totalSpentAmount > currentSavedBudget) {
-        alertBanner.style.background = "rgba(255, 71, 87, 0.15)";
-        alertBanner.style.border = "2px solid #ff4757";
-        alertBanner.style.color = "#ff4757";
-        alertBanner.innerHTML = `🚨 ALERT: Budget Breached! Over-limit by ₹${(totalSpentAmount - currentSavedBudget).toFixed(2)}!`;
-        
-        if (spentCard) {
-            spentCard.style.setProperty("background", "linear-gradient(45deg, #cb2d3e, #ef473a)", "important");
-            spentCard.style.boxShadow = "0 0 20px rgba(239, 71, 58, 0.6)";
+    if (progressBar) {
+        progressBar.style.width = Math.min(pct, 100) + '%';
+        if (pct >= 100) {
+            progressBar.style.background = 'linear-gradient(90deg, #ff4757, #ff6b81)';
+        } else if (pct >= 80) {
+            progressBar.style.background = 'linear-gradient(90deg, #ffa502, #ffdd59)';
+        } else {
+            progressBar.style.background = 'linear-gradient(90deg, #38ef7d, #00c6ff)';
         }
-    } else if (usagePercentage >= 80) {
-        alertBanner.style.background = "rgba(255, 165, 0, 0.15)";
-        alertBanner.style.border = "2px solid #ffa500";
-        alertBanner.style.color = "#ffa500";
-        alertBanner.innerHTML = `⚠️ WARNING: High Expenditure! Utilized ${usagePercentage.toFixed(1)}% of allowance.`;
-        
-        if (spentCard) { spentCard.style.background = "linear-gradient(45deg, #1e3c72, #2a5298)"; spentCard.style.boxShadow = "none"; }
+    }
+
+    if (totalSpent > budget) {
+        banner.style.background = 'rgba(255,71,87,0.1)';
+        banner.style.border = '1px solid #ff4757';
+        banner.style.color = '#ff4757';
+        banner.innerHTML = `🚨 Budget exceeded by ₹${(totalSpent - budget).toFixed(2)}!`;
+    } else if (pct >= 80) {
+        banner.style.background = 'rgba(255,165,0,0.1)';
+        banner.style.border = '1px solid #ffa502';
+        banner.style.color = '#ffa502';
+        banner.innerHTML = `⚠️ ${pct.toFixed(1)}% used — ₹${(budget - totalSpent).toFixed(2)} remaining`;
     } else {
-        alertBanner.style.background = "rgba(46, 204, 113, 0.12)";
-        alertBanner.style.border = "2px solid #2ecc71";
-        alertBanner.style.color = "#2ecc71";
-        alertBanner.innerHTML = `✅ Safe Zone: ${usagePercentage.toFixed(1)}% used. Remaining limit: ₹${(currentSavedBudget - totalSpentAmount).toFixed(2)}`;
-        
-        if (spentCard) { spentCard.style.background = "linear-gradient(45deg, #1e3c72, #2a5298)"; spentCard.style.boxShadow = "none"; }
+        banner.style.background = 'rgba(56,239,125,0.08)';
+        banner.style.border = '1px solid rgba(56,239,125,0.3)';
+        banner.style.color = '#38ef7d';
+        banner.innerHTML = `✅ Safe Zone — ${pct.toFixed(1)}% used, ₹${(budget - totalSpent).toFixed(2)} left`;
     }
 }
 
-// Chart graphics node canvas drafting workspace engine layout diagrams profiles shapes configurations lines controls controls
-function renderAnalyticsChart(totalsDataMap) {
+// ======= CHART =======
+function renderChart(totalsMap) {
     const ctx = document.getElementById('expenseChart');
     const container = document.getElementById('chartContainer');
     if (!ctx || !container) return;
-    
-    const totalSum = Object.values(totalsDataMap).reduce((acc, curr) => acc + curr, 0);
-    if (totalSum === 0) { container.style.display = "none"; return; }
-    
-    container.style.display = "block";
 
-    if (spendwiseChartInstance) { spendwiseChartInstance.destroy(); }
+    const total = Object.values(totalsMap).reduce((a, b) => a + b, 0);
+    if (total === 0) { container.style.display = 'none'; return; }
+
+    container.style.display = 'block';
+    if (spendwiseChartInstance) spendwiseChartInstance.destroy();
 
     spendwiseChartInstance = new Chart(ctx, {
         type: 'doughnut',
         data: {
-            labels: Object.keys(totalsDataMap),
+            labels: Object.keys(totalsMap),
             datasets: [{
-                label: 'Expense Share (₹)',
-                data: Object.values(totalsDataMap),
-                backgroundColor: ['rgba(255, 71, 87, 0.85)', 'rgba(255, 165, 0, 0.85)', 'rgba(234, 32, 39, 0.85)', 'rgba(0, 198, 255, 0.85)', 'rgba(26, 188, 156, 0.85)', 'rgba(155, 89, 182, 0.85)'],
-                borderColor: 'rgba(16, 21, 30, 1)', borderWidth: 2, hoverOffset: 12
+                data: Object.values(totalsMap),
+                backgroundColor: [
+                    'rgba(255,71,87,0.85)',
+                    'rgba(30,144,255,0.85)',
+                    'rgba(236,204,104,0.85)',
+                    'rgba(46,213,115,0.85)',
+                    'rgba(255,165,2,0.85)',
+                    'rgba(124,92,191,0.85)'
+                ],
+                borderColor: '#0d1117',
+                borderWidth: 2,
+                hoverOffset: 14
             }]
         },
         options: {
-            responsive: true, maintainAspectRatio: false,
-            plugins: { legend: { position: 'right', labels: { color: '#dcdde1', font: { size: 11, weight: 'bold' }, padding: 12 } } },
-            animation: { animateScale: false, animateRotate: true, duration: 400 }
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    position: 'right',
+                    labels: {
+                        color: '#8b949e',
+                        font: { size: 11, weight: '600', family: 'Inter' },
+                        padding: 14,
+                        usePointStyle: true,
+                        pointStyleWidth: 8
+                    }
+                },
+                tooltip: {
+                    backgroundColor: 'rgba(13,17,23,0.95)',
+                    borderColor: 'rgba(255,255,255,0.1)',
+                    borderWidth: 1,
+                    titleColor: '#f0f6fc',
+                    bodyColor: '#8b949e',
+                    padding: 12,
+                    callbacks: {
+                        label: (ctx) => ` ₹${ctx.raw.toFixed(2)}`
+                    }
+                }
+            },
+            animation: { animateRotate: true, duration: 600 }
         }
     });
 }
 
-// Dynamic vector reporting sheet layout formatting template configurations vector blocks downloads triggers maps tools
-function generatePDFReport(monthTextName) {
-    if (!window.currentRawExpenses || window.currentRawExpenses.length === 0) {
-        alert("Cannot generate report: No transactions available for this month!");
-        return;
-    }
-
-    const { jsPDF } = window.jspdf;
-    const doc = new jsPDF();
-
-    const monthFilter = document.getElementById('monthFilter').value;
-    const currentSavedBudget = parseFloat(localStorage.getItem(`budget_m_${monthFilter}`)) || 0;
-    const ownerName = window.currentUserName || "User";
-
-    let totalCalculatedSpent = 0;
-    const dataRows = window.currentRawExpenses.map((item, index) => {
-        totalCalculatedSpent += item.amount;
-        return [index + 1, item.itemName, item.category, `Rs. ${item.amount.toFixed(2)}`];
-    });
-
-    doc.setFillColor(30, 41, 59); doc.rect(0, 0, 210, 40, 'F');  
-    doc.setTextColor(255, 255, 255); doc.setFont("helvetica", "bold"); doc.setFontSize(22);
-    doc.text("SPENDWISE FINANCIAL STATEMENT", 14, 18); 
-
-    doc.setFont("helvetica", "normal"); doc.setFontSize(10);
-    doc.text(`Account Holder: ${ownerName} | Statement Month: ${monthTextName}`, 14, 28);
-    doc.text(`Report Generation Date: ${new Date().toLocaleDateString()}`, 14, 34);
-
-    doc.setTextColor(51, 65, 85); doc.setFont("helvetica", "bold"); doc.setFontSize(12);
-    doc.text("Financial Overview Summary:", 14, 52);
-
-    doc.setFont("helvetica", "normal"); doc.setFontSize(10);
-    doc.text(`Target Budget Allowed: Rs. ${currentSavedBudget.toFixed(2)}`, 14, 60);
-    doc.text(`Total Amount Expended: Rs. ${totalCalculatedSpent.toFixed(2)}`, 14, 66);
-    
-    const balanceRemaining = currentSavedBudget - totalCalculatedSpent;
-    if (balanceRemaining < 0) {
-        doc.setTextColor(239, 68, 68); doc.text(`Budget Deficit (Over-spent): Rs. ${Math.abs(balanceRemaining).toFixed(2)} 🚨`, 14, 72);
-    } else {
-        doc.setTextColor(34, 197, 94); doc.text(`Remaining Balance Saved: Rs. ${balanceRemaining.toFixed(2)} ✅`, 14, 72);
-    }
-
-    doc.autoTable({
-        startY: 80, head: [['#', 'Transaction Item Description', 'Expense Category', 'Money Spent']], body: dataRows, theme: 'striped',
-        headStyles: { fillColor: [0, 114, 255], textColor: [255, 255, 255], fontStyle: 'bold' },
-        alternateRowStyles: { fillColor: [248, 250, 252] }, styles: { font: "helvetica", fontSize: 10, cellPadding: 4 }, margin: { left: 14, right: 14 }
-    });
-
-    doc.save(`SpendWise_Report_${monthTextName.replace(/\s+/g, '')}.pdf`);
-}
-
-// 12 sub-month calculation matrix blocks grid layout data compiler lines queries operations loops settings
+// ======= ANNUAL GRID =======
 function loadAnnualOverviewMatrix() {
     fetch('getAnnualSummary')
-    .then(response => response.json())
-    .then(summaryData => {
-        for (let i = 1; i <= 12; i++) { const monthBox = document.getElementById(`m-${i}`); if (monthBox) monthBox.innerText = "₹0.00"; }
-        Object.keys(summaryData).forEach(monthNum => {
-            const monthBox = document.getElementById(`m-${monthNum}`);
-            if (monthBox) { let amount = parseFloat(summaryData[monthNum]); monthBox.innerText = `₹${amount.toFixed(2)}`; }
+    .then(r => r.json())
+    .then(data => {
+        for (let i = 1; i <= 12; i++) {
+            const el = document.getElementById(`m-${i}`);
+            if (el) el.innerText = '₹0';
+        }
+        Object.keys(data).forEach(m => {
+            const el = document.getElementById(`m-${m}`);
+            if (el) el.innerText = `₹${parseFloat(data[m]).toFixed(0)}`;
         });
     })
-    .catch(err => console.error("Grid assignment stream exception:", err));
+    .catch(err => console.error('Annual grid error:', err));
 }
 
-// CRUD row rows entries deletion tracking destruction binding pipeline codes configurations controls strings systems
-function deleteTransaction(transactionId, buttonElement) {
-    if (!confirm("Are you sure you want to delete this expense permanently?")) return; 
-    fetch(`deleteExpense?id=${transactionId}`, { method: 'POST' })
-    .then(response => response.json())
-    .then(data => {
-        if (data.status === "success") {
-            buttonElement.closest('.transaction-item').remove();
-            const monthFilter = document.getElementById('monthFilter');
-            fetchMonthlyExpenses(monthFilter.value);
-            loadAnnualOverviewMatrix();
-        } else { alert("Execution Interrupted: " + data.message); }
-    })
-    .catch(err => console.error("Pipeline failure on deletion trigger:", err));
+// ======= DELETE TRANSACTION =======
+function deleteTransaction(id, btn) {
+    if (!confirm('Delete this expense permanently?')) return;
+
+    const item = btn.closest('.transaction-item');
+    if (item) {
+        item.style.transition = 'all 0.3s ease';
+        item.style.opacity = '0';
+        item.style.transform = 'translateX(100%)';
+    }
+
+    setTimeout(() => {
+        fetch(`deleteExpense?id=${id}`, { method: 'POST' })
+        .then(r => r.json())
+        .then(data => {
+            if (data.status === 'success') {
+                const monthFilter = document.getElementById('monthFilter');
+                fetchMonthlyExpenses(monthFilter.value);
+                loadAnnualOverviewMatrix();
+                showToast('Transaction deleted!', 'info');
+            } else {
+                showToast('Delete failed!', 'error');
+                if (item) { item.style.opacity = '1'; item.style.transform = ''; }
+            }
+        })
+        .catch(() => showToast('Network error!', 'error'));
+    }, 300);
 }

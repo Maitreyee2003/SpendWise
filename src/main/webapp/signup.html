@@ -4,75 +4,388 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>SpendWise - Create Account</title>
-    <link rel="stylesheet" href="style.css"> <style>
-        /* Login/Signup layout ko screen ke beech mein center karne ke liye extra style */
-        .auth-wrapper {
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Segoe UI', Arial, sans-serif;
+            background: #0a0a1a;
+            min-height: 100vh;
             display: flex;
             justify-content: center;
             align-items: center;
-            min-height: 80vh;
+            overflow: hidden;
         }
-        .auth-container {
+
+        body::before {
+            content: '';
+            position: fixed;
+            top: -50%; left: -50%;
+            width: 200%; height: 200%;
+            background: 
+                radial-gradient(ellipse at 20% 50%, rgba(0,198,255,0.08) 0%, transparent 50%),
+                radial-gradient(ellipse at 80% 20%, rgba(0,114,255,0.08) 0%, transparent 50%);
+            animation: bgMove 8s ease-in-out infinite alternate;
+            z-index: 0;
+        }
+
+        @keyframes bgMove {
+            0% { transform: translate(0,0); }
+            100% { transform: translate(-30px,-20px); }
+        }
+
+        .particles {
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            z-index: 0;
+        }
+
+        .particle {
+            position: absolute;
+            background: rgba(0,198,255,0.4);
+            border-radius: 50%;
+            animation: float linear infinite;
+        }
+
+        @keyframes float {
+            0% { transform: translateY(100vh); opacity: 0; }
+            10% { opacity: 1; }
+            90% { opacity: 1; }
+            100% { transform: translateY(-100px); opacity: 0; }
+        }
+
+        .wrapper {
+            position: relative;
+            z-index: 1;
             width: 100%;
-            max-width: 400px;
-            padding: 30px;
-            background: rgba(255, 255, 255, 0.05);
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: 16px;
-            text-align: center;
-            box-shadow: 0 0 20px rgba(0, 198, 255, 0.2);
+            max-width: 440px;
+            padding: 20px;
         }
+
+        .logo-area {
+            text-align: center;
+            margin-bottom: 25px;
+        }
+
+        .logo-icon {
+            width: 65px; height: 65px;
+            background: linear-gradient(135deg, #00c6ff, #0072ff);
+            border-radius: 18px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 30px;
+            margin-bottom: 10px;
+            box-shadow: 0 10px 30px rgba(0,198,255,0.3);
+            animation: logoFloat 3s ease-in-out infinite;
+        }
+
+        @keyframes logoFloat {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-8px); }
+        }
+
+        .logo-name {
+            font-size: 24px;
+            font-weight: 800;
+            background: linear-gradient(135deg, #00c6ff, #0072ff);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            letter-spacing: 2px;
+        }
+
+        .logo-tagline {
+            color: rgba(255,255,255,0.3);
+            font-size: 11px;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            margin-top: 4px;
+        }
+
+        .card {
+            background: rgba(255,255,255,0.04);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(0,198,255,0.15);
+            border-radius: 24px;
+            padding: 40px 36px;
+            box-shadow: 0 25px 50px rgba(0,0,0,0.5);
+        }
+
+        .card-title {
+            color: #fff;
+            font-size: 22px;
+            font-weight: 700;
+            margin-bottom: 6px;
+        }
+
+        .card-subtitle {
+            color: rgba(255,255,255,0.4);
+            font-size: 14px;
+            margin-bottom: 28px;
+        }
+
+        .input-group { margin-bottom: 16px; }
+
+        .input-label {
+            display: block;
+            color: rgba(0,198,255,0.8);
+            font-size: 11px;
+            font-weight: 600;
+            letter-spacing: 1.5px;
+            text-transform: uppercase;
+            margin-bottom: 8px;
+        }
+
+        .input-wrapper { position: relative; }
+
+        .input-icon {
+            position: absolute;
+            left: 14px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 16px;
+            opacity: 0.5;
+        }
+
         .auth-input {
             width: 100%;
-            padding: 12px;
-            margin: 10px 0;
-            background: rgba(255, 255, 255, 0.1);
-            border: 1px solid rgba(255, 255, 255, 0.2);
+            padding: 13px 14px 13px 42px;
+            background: rgba(255,255,255,0.06);
+            border: 1px solid rgba(255,255,255,0.1);
             color: #fff;
-            border-radius: 8px;
+            border-radius: 12px;
+            font-size: 14px;
+            transition: all 0.3s;
             outline: none;
-            box-sizing: border-box;
         }
+
+        .auth-input::placeholder { color: rgba(255,255,255,0.25); }
+
         .auth-input:focus {
-            border-color: #00c6ff;
-            box-shadow: 0 0 8px rgba(0, 198, 255, 0.3);
+            border-color: rgba(0,198,255,0.5);
+            background: rgba(0,198,255,0.08);
+            box-shadow: 0 0 0 3px rgba(0,198,255,0.1);
         }
-        .auth-btn {
+
+        .toggle-pass {
+            position: absolute;
+            right: 14px;
+            top: 50%;
+            transform: translateY(-50%);
+            cursor: pointer;
+            font-size: 16px;
+            opacity: 0.5;
+            background: none;
+            border: none;
+            transition: opacity 0.2s;
+        }
+
+        .toggle-pass:hover { opacity: 1; }
+
+        /* Benefits */
+        .benefits {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+            margin-bottom: 20px;
+        }
+
+        .benefit-item {
+            background: rgba(0,198,255,0.05);
+            border: 1px solid rgba(0,198,255,0.1);
+            border-radius: 8px;
+            padding: 8px 10px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 11px;
+            color: rgba(255,255,255,0.5);
+        }
+
+        .submit-btn {
             width: 100%;
-            padding: 12px;
+            padding: 14px;
             background: linear-gradient(135deg, #00c6ff, #0072ff);
             border: none;
             color: white;
-            font-weight: bold;
-            border-radius: 8px;
+            font-weight: 700;
+            font-size: 15px;
+            border-radius: 12px;
             cursor: pointer;
-            margin-top: 15px;
-            box-shadow: 0 0 10px rgba(0, 198, 255, 0.4);
-            font-size: 16px;
+            letter-spacing: 1px;
+            transition: all 0.3s;
+            position: relative;
+            overflow: hidden;
         }
-        .auth-btn:hover {
-            opacity: 0.9;
+
+        .submit-btn::before {
+            content: '';
+            position: absolute;
+            top: 0; left: -100%;
+            width: 100%; height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+            transition: left 0.5s;
         }
+
+        .submit-btn:hover::before { left: 100%; }
+        .submit-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(0,114,255,0.4);
+        }
+
+        .divider {
+            display: flex;
+            align-items: center;
+            margin: 20px 0;
+            gap: 12px;
+        }
+
+        .divider-line {
+            flex: 1;
+            height: 1px;
+            background: rgba(255,255,255,0.08);
+        }
+
+        .divider-text {
+            color: rgba(255,255,255,0.2);
+            font-size: 12px;
+        }
+
+        .bottom-links {
+            text-align: center;
+        }
+
+        .bottom-links p {
+            color: rgba(255,255,255,0.4);
+            font-size: 13px;
+        }
+
+        .bottom-links a {
+            color: #00c6ff;
+            text-decoration: none;
+            font-weight: 600;
+        }
+
+        .bottom-links a:hover { text-decoration: underline; }
     </style>
 </head>
 <body>
-    <div class="auth-wrapper">
-        <div class="auth-container">
-            <h2 style="color: #00c6ff; margin-bottom: 10px;">SpendWise 🚀</h2>
-            <p style="color: #aaa; font-size: 14px; margin-bottom: 25px;">Create a new account to manage your budget</p>
-            
+
+    <div class="particles" id="particles"></div>
+
+    <div class="wrapper">
+
+        <div class="logo-area">
+            <div class="logo-icon">💰</div>
+            <div class="logo-name">SPENDWISE</div>
+            <div class="logo-tagline">Personal Finance Manager</div>
+        </div>
+
+        <div class="card">
+
+            <h2 class="card-title">Create Account 🚀</h2>
+            <p class="card-subtitle">Start managing your finances smartly</p>
+
+            <!-- Benefits -->
+            <div class="benefits">
+                <div class="benefit-item">📊 Expense Tracking</div>
+                <div class="benefit-item">💰 Budget Alerts</div>
+                <div class="benefit-item">📄 PDF Reports</div>
+                <div class="benefit-item">🔐 Secure & Private</div>
+            </div>
+
             <form action="registerUser" method="POST">
-                <input type="text" name="fullName" class="auth-input" placeholder="Full Name" required>
-                <input type="email" name="userEmail" class="auth-input" placeholder="Email Address" required>
-                <input type="password" name="userPassword" class="auth-input" placeholder="Create Password" required>
-                <button type="submit" class="auth-btn">Sign Up</button>
+
+                <div class="input-group">
+                    <label class="input-label">Full Name</label>
+                    <div class="input-wrapper">
+                        <span class="input-icon">👤</span>
+                        <input type="text"
+                               name="fullName"
+                               class="auth-input"
+                               placeholder="Enter your full name"
+                               required>
+                    </div>
+                </div>
+
+                <div class="input-group">
+                    <label class="input-label">Email Address</label>
+                    <div class="input-wrapper">
+                        <span class="input-icon">📧</span>
+                        <input type="email"
+                               name="userEmail"
+                               class="auth-input"
+                               placeholder="Enter your email"
+                               required>
+                    </div>
+                </div>
+
+                <div class="input-group">
+                    <label class="input-label">Password</label>
+                    <div class="input-wrapper">
+                        <span class="input-icon">🔒</span>
+                        <input type="password"
+                               name="userPassword"
+                               id="signupPassword"
+                               class="auth-input"
+                               placeholder="Create a strong password"
+                               required>
+                        <button type="button" class="toggle-pass"
+                                onclick="togglePass('signupPassword', this)">👁️</button>
+                    </div>
+                </div>
+
+                <button type="submit" class="submit-btn">
+                    🚀 Create My Account
+                </button>
+
             </form>
-            
-            <p style="margin-top: 20px; font-size: 14px; color: #aaa;">
-                Already have an account? <a href="login.html" style="color: #00c6ff; text-decoration: none; font-weight: bold;">Login here</a>
-            </p>
+
+            <div class="divider">
+                <div class="divider-line"></div>
+                <span class="divider-text">OR</span>
+                <div class="divider-line"></div>
+            </div>
+
+            <div class="bottom-links">
+                <p>Already have an account?
+                    <a href="login.html">Login here</a>
+                </p>
+            </div>
+
         </div>
     </div>
+
+    <script>
+        function createParticles() {
+            const container = document.getElementById('particles');
+            for (let i = 0; i < 40; i++) {
+                const p = document.createElement('div');
+                p.className = 'particle';
+                p.style.left = Math.random() * 100 + '%';
+                const size = Math.random() * 3 + 1;
+                p.style.width = size + 'px';
+                p.style.height = size + 'px';
+                p.style.animationDuration = (Math.random() * 15 + 10) + 's';
+                p.style.animationDelay = (Math.random() * 15) + 's';
+                container.appendChild(p);
+            }
+        }
+        createParticles();
+
+        function togglePass(inputId, btn) {
+            const input = document.getElementById(inputId);
+            if (input.type === 'password') {
+                input.type = 'text';
+                btn.textContent = '🙈';
+            } else {
+                input.type = 'password';
+                btn.textContent = '👁️';
+            }
+        }
+    </script>
+
 </body>
 </html>
